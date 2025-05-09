@@ -10,7 +10,7 @@
  * Contributors:
  *  Eurotech
  *******************************************************************************/
-package org.eclipse.kura.example.driver.test;
+package org.eclipse.kura.example.component.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doAnswer;
@@ -23,14 +23,14 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.eclipse.kura.example.driver.ExampleDriver;
-import org.eclipse.kura.example.driver.ExampleDependencyService;
+import org.eclipse.kura.example.component.ExampleComponent;
+import org.eclipse.kura.example.component.ExampleDependencyService;
 
 public class ExampleComponentTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExampleDriver.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExampleComponent.class);
 
-    private ExampleDriver exampleComponent = new ExampleDriver();
+    private ExampleComponent exampleComponent = new ExampleComponent();
     private Map<String, Object> properties = new HashMap<>();
     private ExampleDependencyService dependencyService;
 
@@ -54,7 +54,7 @@ public class ExampleComponentTest {
     }
 
     private void givenExampleComponent() {
-        this.exampleComponent = new ExampleDriver();
+        this.exampleComponent = new ExampleComponent();
         this.exampleComponent.setExampleDependencyService(this.dependencyService);
     }
 

@@ -50,6 +50,8 @@
         <lifecycle.mapping.version>1.0.0</lifecycle.mapping.version>
         <skip.artifact.signing>true</skip.artifact.signing>
         <keystore.type>JKS</keystore.type>
+        <kura.target.definition.version>6.0.0-SNAPSHOT</kura.target.definition.version>
+        <skip.copy.target.definition>false</skip.copy.target.definition>
     </properties>
 
     <build>
@@ -82,9 +84,9 @@
                     <configuration>
                         <target>
                             <artifact>
-                                <groupId>org.eclipse.kura.example.driver</groupId>
-                                <artifactId>org.eclipse.kura.example.driver.target-definition</artifactId>
-                                <version>${target-definition-version}</version>
+                                <groupId>org.eclipse.kura</groupId>
+                                <artifactId>kura-target-definition.target</artifactId>
+                                <version>${kura.target.definition.version}</version>
                             </artifact>
                         </target>
                     </configuration>
@@ -267,6 +269,33 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.6.0</version>
+                    <executions>
+                        <execution>
+                            <id>copy-local-target-definition</id>
+                            <phase>generate-resources</phase>
+                            <goals>
+                                <goal>copy</goal>
+                            </goals>
+                            <configuration>
+                                <skip>${skip.copy.target.definition}</skip>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>org.eclipse.kura</groupId>
+                                        <artifactId>kura-target-definition.target</artifactId>
+                                        <version>6.0.0-SNAPSHOT</version>
+                                        <type>target</type>
+                                        <outputDirectory>${project.basedir}/../target-definition</outputDirectory>
+                                        <destFileName>kura-target-definition.target</destFileName>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -298,6 +327,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jarsigner-plugin</artifactId>
+            </plugin>
+            <plugin>
+            	<groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

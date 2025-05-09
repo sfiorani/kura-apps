@@ -12,19 +12,14 @@
  *******************************************************************************/
 package org.eclipse.kura.example.driver;
 
-import java.util.Map;
-
 import org.eclipse.kura.example.driver.ExampleDriverChannelDescriptor.UnitMeasure;
-import org.eclipse.kura.example.driver.utils.Property;
 
 public class ExampleDriverOptions {
 
-    private static final Property<String> FIRST_ADDEND = new Property<>("input.unit.measure", "meter");
-
     private final UnitMeasure inputUnitMeasure;
 
-    public ExampleDriverOptions(final Map<String, Object> properties) {
-        this.inputUnitMeasure = UnitMeasure.valueOf(FIRST_ADDEND.getOrDefault(properties));
+    public ExampleDriverOptions(ExampleDriverOCD properties) {
+        this.inputUnitMeasure = UnitMeasure.valueOf(properties.input_unit_measure());
     }
 
     public UnitMeasure getInputUnitMeasure() {

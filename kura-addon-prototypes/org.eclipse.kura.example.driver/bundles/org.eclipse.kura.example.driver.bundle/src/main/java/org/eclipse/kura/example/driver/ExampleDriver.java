@@ -38,11 +38,10 @@ import org.slf4j.LoggerFactory;
 
 @Component(immediate = true, //
         configurationPolicy = ConfigurationPolicy.REQUIRE, //
-        property = {}, //
-        service = { Driver.class, ConfigurableComponent.class }, //
-        factory = "org.eclipse.kura.example.driver.factory" //
+        service = { ConfigurableComponent.class, Driver.class } //
 )
-@Designate(ocd = ExampleDriverOCD.class, factory = false)
+
+@Designate(ocd = ExampleDriverOCD.class, factory = true)
 public class ExampleDriver implements ConfigurableComponent, Driver {
 
     private static final Logger logger = LoggerFactory.getLogger(ExampleDriver.class);
@@ -64,7 +63,7 @@ public class ExampleDriver implements ConfigurableComponent, Driver {
      * ExampleComponentOCD configuration)
      */
     @Activate
-    public void activate(final Map<String, Object> properties) {
+    public void activate(ExampleDriverOCD properties) {
         logger.info("Activating");
 
         updated(properties);
@@ -73,7 +72,7 @@ public class ExampleDriver implements ConfigurableComponent, Driver {
     }
 
     @Modified
-    public void updated(final Map<String, Object> properties) {
+    public void updated(ExampleDriverOCD properties) {
         logger.info("Updating");
 
         logger.debug("Updating with properties: {}", properties);
@@ -150,14 +149,23 @@ public class ExampleDriver implements ConfigurableComponent, Driver {
     public void write(List<ChannelRecord> records) throws ConnectionException {
 
         for (ChannelRecord chRecord : records) {
+            try {
+                Double writingValue = MeasureConverter.convertFromDataType(chRecord.getValue(),
+                        chRecord.getValueType());
+                Double result = MeasureConverter.convertMeasure(this.options.getInputUnitMeasure(), writingValue,
+                        ExampleDriverChannelDescriptor.getOutputUnitMeasure(chRecord.getChannelConfig()));
 
-            Double writingValue = MeasureConverter.convertFromDataType(chRecord.getValue(), chRecord.getValueType());
-            Double result = MeasureConverter.convertMeasure(this.options.getInputUnitMeasure(), writingValue,
-                    ExampleDriverChannelDescriptor.getOutputUnitMeasure(chRecord.getChannelConfig()));
+                chRecord.setChannelStatus(new ChannelStatus(ChannelFlag.SUCCESS));
+                chRecord.setTimestamp(System.currentTimeMillis());
 
-            logger.info("Input value {} in {}, has a value of {} in {}", chRecord.getValue().getValue(),
-                    this.options.getInputUnitMeasure(), result,
-                    ExampleDriverChannelDescriptor.getOutputUnitMeasure(chRecord.getChannelConfig()));
+                logger.info("Input value {} in {}, has a value of {} in {}", chRecord.getValue().getValue(),
+                        this.options.getInputUnitMeasure(), result,
+                        ExampleDriverChannelDescriptor.getOutputUnitMeasure(chRecord.getChannelConfig()));
+
+            } catch (Exception ex) {
+                chRecord.setChannelStatus(new ChannelStatus(ChannelFlag.FAILURE, ex.getMessage(), ex));
+                chRecord.setTimestamp(System.currentTimeMillis());
+            }
         }
 
     }

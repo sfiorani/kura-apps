@@ -12,51 +12,114 @@
  *******************************************************************************/
 package org.eclipse.kura.example.driver.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import org.eclipse.kura.configuration.ConfigurableComponent;
+import org.eclipse.kura.KuraException;
+import org.eclipse.kura.channel.ChannelFlag;
+import org.eclipse.kura.channel.ChannelRecord;
+import org.eclipse.kura.configuration.ConfigurationService;
+import org.eclipse.kura.driver.Driver;
+import org.eclipse.kura.driver.Driver.ConnectionException;
+import org.eclipse.kura.example.driver.ExampleDriverChannelDescriptor.UnitMeasure;
+import org.eclipse.kura.type.DataType;
+import org.eclipse.kura.util.wire.test.WireTestUtil;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(immediate = true)
 public class ExampleComponentItTest {
 
-	private static final Logger logger = LoggerFactory.getLogger(ExampleComponentItTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExampleComponentItTest.class);
 
-    private static final CountDownLatch dependencies = new CountDownLatch(1);
+    private static final String FACTORY_PID = "org.eclipse.kura.example.driver.ExampleDriver";
 
-    // needs to be static for being available to JUnit Runner
-    private static ConfigurableComponent exampleComponent;
+    static ConfigurationService configurationService;
+    String activePid = null;
+    Driver driver;
+    List<ChannelRecord> channelList = new ArrayList<>();
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY, //
-        policy = ReferencePolicy.STATIC, //
-        target = "(kura.service.pid=org.eclipse.kura.example.driver.ExampleComponent)" //
-    )
-    public void setExampleComponent(final ConfigurableComponent componentUnderTest) {
-        exampleComponent = componentUnderTest;
-        dependencies.countDown();
-        logger.info("Got service reference {}", exampleComponent.getClass().getSimpleName());
+    @Test
+    public void shouldReadCorrectly()
+            throws InterruptedException, ExecutionException, TimeoutException, ConnectionException {
+
+        givenDriver();
+        givenChannelWithConfig("Channel-1", DataType.DOUBLE, UnitMeasure.INCH, 10.5D);
+
+        whenRead();
+
+        thenDriverIsNotNull();
+        thenChannelIsSuccessful("Channel-1");
+        thenChannelValueIsCorrect("Channel-1", DataType.DOUBLE, 413.38457999999997);
+
     }
 
     @BeforeClass
-    public static void awaitDependencies() throws InterruptedException {
-        if (!dependencies.await(30, TimeUnit.SECONDS)) {
-            throw new IllegalStateException("dependencies not resolved in 30 seconds");
-        }
+    public static void setupConfigurationService()
+            throws InterruptedException, ExecutionException, TimeoutException, KuraException, InvalidSyntaxException {
+        configurationService = WireTestUtil.trackService(ConfigurationService.class, Optional.empty()).get(30,
+                TimeUnit.SECONDS);
     }
 
-    @Test
-    public void shouldHaveTrackedExampleComponent() {
-    	assertNotNull(exampleComponent);
+    private void givenDriver() throws InterruptedException, ExecutionException, TimeoutException {
+        this.activePid = "ExampleDriver";
+
+        this.driver = WireTestUtil.createFactoryConfiguration(configurationService, Driver.class, activePid,
+                FACTORY_PID, new HashMap<String, Object>()).get(30, TimeUnit.SECONDS);
     }
 
+    private void givenChannelWithConfig(String channelName, DataType dataType, UnitMeasure unitMeasure,
+            Double inputData) {
+
+        ChannelRecord chRecord = ChannelRecord.createReadRecord(channelName, dataType);
+
+        HashMap<String, Object> conf = new HashMap<>();
+        conf.put("+type", "READ");
+        conf.put("readChannel", "readChannel");
+        conf.put("+name", channelName);
+        conf.put("+value.type", dataType.toString());
+        conf.put("output.unit.measure", unitMeasure.name());
+        conf.put("input.data", inputData);
+
+        chRecord.setChannelConfig(conf);
+
+        this.channelList.add(chRecord);
+    }
+
+    private void whenRead() throws ConnectionException {
+        this.driver.read(this.channelList);
+    }
+
+    private void thenDriverIsNotNull() {
+        assertNotNull(driver);
+    }
+
+    private void thenChannelIsSuccessful(String channelName) {
+        this.channelList.stream().filter(channel -> channel.getChannelName().equals(channelName)).findFirst()
+                .ifPresentOrElse(channel -> {
+                    assertEquals(ChannelFlag.SUCCESS, channel.getChannelStatus().getChannelFlag());
+                }, Assert::fail);
+    }
+
+    private void thenChannelValueIsCorrect(String channelName, DataType expectedType, Object expectedValue) {
+        this.channelList.stream().filter(channel -> channel.getChannelName().equals(channelName)).findFirst()
+                .ifPresentOrElse(channel -> {
+                    assertEquals(expectedType, channel.getValueType());
+                    assertEquals(expectedValue, channel.getValue().getValue());
+                }, Assert::fail);
+
+    }
 }
