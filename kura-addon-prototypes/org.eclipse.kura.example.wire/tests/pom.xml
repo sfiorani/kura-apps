@@ -20,12 +20,12 @@
 
     <parent>
         <groupId>org.eclipse.kura</groupId>
-        <artifactId>org.eclipse.kura.example.driver.parent</artifactId>
+        <artifactId>org.eclipse.kura.example.wire.parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../bundles/pom.xml</relativePath>
     </parent>
 
-    <artifactId>org.eclipse.kura.example.driver.tests</artifactId>
+    <artifactId>org.eclipse.kura.example.wire.tests</artifactId>
     <packaging>pom</packaging>
 
     <properties>
@@ -33,7 +33,6 @@
         <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
         <jacoco.maven.plugin.version>0.8.12</jacoco.maven.plugin.version>
         <kura.workdir>${project.build.directory}/test-env</kura.workdir>
-        <skip.copy.target.definition>true</skip.copy.target.definition>
     </properties>
 
     <build>
@@ -328,11 +327,6 @@
                                     <versionRange>0.0.0</versionRange>
                                 </requirement>
                                 <requirement>
-                                    <type>eclipse-plugin</type>
-                                    <id>org.eclipse.kura.util.wire.test</id>
-                                    <versionRange>0.0.0</versionRange>
-                                </requirement>
-                                <requirement>
                                     <type>p2-installable-unit</type>
                                     <id>org.eclipse.equinox.metatype</id>
                                     <versionRange>0.0.0</versionRange>
@@ -374,7 +368,7 @@
     </profiles>
 
     <modules>
-        <module>org.eclipse.kura.example.driver.bundle.test</module>
+        <module>org.eclipse.kura.example.wire.bundle.test</module>
     </modules>
 
 </project>

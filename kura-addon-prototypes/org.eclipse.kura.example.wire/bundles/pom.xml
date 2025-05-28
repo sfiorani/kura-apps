@@ -20,11 +20,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.eclipse.kura</groupId>
-    <artifactId>org.eclipse.kura.example.driver.parent</artifactId>
+    <artifactId>org.eclipse.kura.example.wire.parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Parent POM for org.eclipse.kura.example.driver</name>
+    <name>Parent POM for org.eclipse.kura.example.wire</name>
 
     <pluginRepositories>
         <pluginRepository>
@@ -51,7 +51,6 @@
         <skip.artifact.signing>true</skip.artifact.signing>
         <keystore.type>JKS</keystore.type>
         <kura.target.definition.version>6.0.0-SNAPSHOT</kura.target.definition.version>
-        <skip.copy.target.definition>false</skip.copy.target.definition>
     </properties>
 
     <build>
@@ -262,7 +261,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore/>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -301,10 +300,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jarsigner-plugin</artifactId>
             </plugin>
-            <plugin>
-            	<groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
 
@@ -331,6 +326,6 @@
     </repositories>
 
     <modules>
-        <module>org.eclipse.kura.example.driver.bundle</module>
+        <module>org.eclipse.kura.example.wire.bundle</module>
     </modules>
 </project>

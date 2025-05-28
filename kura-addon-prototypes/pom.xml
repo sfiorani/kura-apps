@@ -19,12 +19,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.eclipse.kura</groupId>
-	<artifactId>addon.prototypes</artifactId>
+	<artifactId>kura-addon-prototypes</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
 		<module>org.eclipse.kura.example.driver</module>
+		<module>org.eclipse.kura.example.wire</module>
 	</modules>
 
 </project>

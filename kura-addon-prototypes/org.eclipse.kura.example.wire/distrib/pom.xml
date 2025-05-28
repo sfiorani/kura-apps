@@ -21,12 +21,12 @@
 
     <parent>
         <groupId>org.eclipse.kura</groupId>
-        <artifactId>org.eclipse.kura.example.driver.parent</artifactId>
+        <artifactId>org.eclipse.kura.example.wire.parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../bundles/pom.xml</relativePath>
     </parent>
 
-    <artifactId>org.eclipse.kura.example.driver.distrib</artifactId>
+    <artifactId>org.eclipse.kura.example.wire.distrib</artifactId>
     <packaging>pom</packaging>
 
     <!-- Change this if your org is different -->
@@ -36,19 +36,16 @@
     </organization>
 
     <properties>
-
-        <skip.copy.target.definition>true</skip.copy.target.definition>
-
+    	
         <!--
-            With n being the start level, config.ini will be populated depending on which plugins directory the
-        bundle is put:
+            With n being the start level, config.ini will be populated depending on which plugins directory the bundle is put:
             n => bundle.name:@n;
             ns => bundle.name:@n:start;
         -->
         <addon.installation.dir>/opt/eclipse/kura/plugins/6s</addon.installation.dir>
 
         <!-- name of the JAR produced in bundles/target -->
-        <jar.name>org.eclipse.kura.example.driver.bundle</jar.name>
+        <jar.name>org.eclipse.kura.example.wire.bundle</jar.name>
 
         <!--
             Available DEB architectures:
@@ -57,7 +54,7 @@
         <deb.architecture>all</deb.architecture>
 
         <!-- final name of the generated debian package -->
-        <package.name>org.eclipse.kura.example.driver</package.name>
+        <package.name>org.eclipse.kura.example.wire</package.name>
 
         <!-- properties used for artifact upload on artifactory repository -->
         <kura.repo.distribution>CHANGEME</kura.repo.distribution>
@@ -68,66 +65,64 @@
         <long.description>Here goes the long description of the packages, in this case this is an example addon for the Eclipse Kura Framework.</long.description>
     </properties>
 
-	<profiles>
-        <!-- Internal profile: FOR INTERNAL USE ONLY - active if -DreleaseBuild
-        is *not* specified. -->
+    <profiles>
+        <!-- Internal profile: FOR INTERNAL USE ONLY - active if -DreleaseBuild is *not* specified. -->
         <profile>
-        	<id>debugBuild</id>
-        	<activation>
+            <id>debugBuild</id>
+            <activation>
                 <property>
-                	<name>!releaseBuild</name>
+                    <name>!releaseBuild</name>
                 </property>
-        	</activation>
-        	<properties>
+            </activation>
+            <properties>
                 <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
                 <package.snapshot>git${maven.build.timestamp}.${git.commit.id.abbrev}</package.snapshot>
 
                 <package.version>${release.version}~${package.snapshot}</package.version>
                 <package.revision>1</package.revision>
-        	</properties>
+            </properties>
         </profile>
-        <!-- Internal profile: FOR INTERNAL USE ONLY - active if -DreleaseBuild
-        *is* specified. -->
+        <!-- Internal profile: FOR INTERNAL USE ONLY - active if -DreleaseBuild *is* specified. -->
         <profile>
-        	<id>releaseBuild</id>
-        	<activation>
+            <id>releaseBuild</id>
+            <activation>
                 <property>
-                	<name>releaseBuild</name>
+                    <name>releaseBuild</name>
                 </property>
-        	</activation>
-        	<properties>
+            </activation>
+            <properties>
                 <package.version>${release.version}</package.version>
                 <package.revision>1</package.revision>
-        	</properties>
-        	<build>
+            </properties>
+            <build>
                 <plugins>
-                	<plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.5.0</version>
-                    <executions>
-                    	<execution>
-                            <id>enforce-no-snapshots</id>
-                            <goals>
-                            	<goal>enforce</goal>
-                            </goals>
-                            <configuration>
-                            	<rules>
-                                    <requireReleaseVersion>
-                                    	<message>No snapshots allowed for release builds!</message>
-                                    </requireReleaseVersion>
-                            	</rules>
-                            	<fail>true</fail>
-                            </configuration>
-                    	</execution>
-                    </executions>
-                	</plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <execution>
+                                <id>enforce-no-snapshots</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireReleaseVersion>
+                                            <message>No snapshots allowed for release builds!</message>
+                                        </requireReleaseVersion>
+                                    </rules>
+                                    <fail>true</fail>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
-        	</build>
+            </build>
         </profile>
-	</profiles>
+    </profiles>
 
-	<build>
+    <build>
         <plugins>
             <!-- Responsible for removing the "-SNAPSHOT" from the project.version -->
             <plugin>
@@ -136,17 +131,17 @@
                 <version>3.6.0</version>
                 <executions>
                     <execution>
-                    <id>regex-property</id>
-                    <goals>
-                    	<goal>regex-property</goal>
-                    </goals>
-                    <configuration>
+                        <id>regex-property</id>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
                             <name>release.version</name>
                             <value>${project.version}</value>
                             <regex>-SNAPSHOT</regex>
                             <replacement></replacement>
                             <failIfNoMatch>false</failIfNoMatch>
-                    </configuration>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -157,44 +152,43 @@
                 <artifactId>git-commit-id-maven-plugin</artifactId>
                 <version>9.0.1</version>
                 <executions>
-                	<execution>
-                    <id>get-the-git-infos</id>
-                    <goals>
-                    	<goal>revision</goal>
-                    </goals>
-                    <phase>initialize</phase>
-                	</execution>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
                 </executions>
                 <configuration>
-                	<injectAllReactorProjects>true</injectAllReactorProjects>
-                	<generateGitPropertiesFile>false</generateGitPropertiesFile>
-                	<skipPoms>false</skipPoms>
-                	<includeOnlyProperties>
-                    <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>
-                	</includeOnlyProperties>
+                    <injectAllReactorProjects>true</injectAllReactorProjects>
+                    <generateGitPropertiesFile>false</generateGitPropertiesFile>
+                    <skipPoms>false</skipPoms>
+                    <includeOnlyProperties>
+                        <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>
+                    </includeOnlyProperties>
                 </configuration>
-        	</plugin>
-
-        	<plugin>
+            </plugin>
+            <plugin>
                 <groupId>com.coderplus.maven.plugins</groupId>
                 <artifactId>copy-rename-maven-plugin</artifactId>
                 <version>1.0.1</version>
                 <executions>
-                	<execution>
-                    <id>copy-and-rename-jar</id>
-                    <phase>generate-sources</phase>
-                    <goals>
-                    	<goal>copy</goal>
-                    </goals>
-                    <configuration>
-                    	<sourceFile>${project.basedir}/../bundles/${jar.name}/target/${jar.name}-${project.version}.jar</sourceFile>
-                    	<destinationFile>target/input_files/${jar.name}_${project.version}.jar</destinationFile>
-                    </configuration>
-                	</execution>
+                    <execution>
+                        <id>copy-and-rename-jar</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <sourceFile>${project.basedir}/../bundles/${jar.name}/target/${jar.name}-${project.version}.jar</sourceFile>
+                            <destinationFile>target/input_files/${jar.name}_${project.version}.jar</destinationFile>
+                        </configuration>
+                    </execution>
                 </executions>
-        	</plugin>
+            </plugin>
 
-        	<plugin>
+            <plugin>
                 <groupId>org.vafer</groupId>
                 <artifactId>jdeb</artifactId>
                 <version>1.12</version>
@@ -218,8 +212,7 @@
                                 it is usefull if different files require different prefix (aka:
                                 different destination location) or specific user, group and filemode -->
                                 <data>
-                                    <src>
-                                        ${basedir}/target/input_files/${jar.name}_${project.version}.jar</src>
+                                    <src>${basedir}/target/input_files/${jar.name}_${project.version}.jar</src>
                                     <dst>${jar.name}_${project.version}.jar</dst>
                                     <type>file</type>
                                     <mapper>
@@ -231,12 +224,12 @@
                                     </mapper>
                                 </data>
 
-                                <!-- 
-                                
+                                <!--
+
                                 If all the source file are managed in the same way, it is also
                                 possible to specify a 'directory' data type to include all the files
                                 present in the specify path
-                                
+
                                 <data>
                                     <src>${basedir}/target/input_files</src>
                                     <dst>${jar.name}_${project.version}.jar</dst>
@@ -249,7 +242,7 @@
                                         <filemode>600</filemode>
                                     </mapper>
                                 </data>
-                                
+
                                 -->
                             </dataSet>
                         </configuration>

@@ -20,7 +20,7 @@
 
     <parent>
         <groupId>org.eclipse.kura</groupId>
-        <artifactId>org.eclipse.kura.example.driver.parent</artifactId>
+        <artifactId>org.eclipse.kura.example.wire.parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
@@ -28,10 +28,9 @@
         <sonar.coverage.jacoco.xmlReportPaths>
             ${project.basedir}/../../tests/*/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
-        <skip.copy.target.definition>true</skip.copy.target.definition>
     </properties>
 
-    <artifactId>org.eclipse.kura.example.driver.bundle</artifactId>
+    <artifactId>org.eclipse.kura.example.wire.bundle</artifactId>
     <packaging>eclipse-plugin</packaging>
 
 </project>
