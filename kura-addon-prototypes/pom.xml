@@ -26,6 +26,7 @@
 	<modules>
 		<module>org.eclipse.kura.example.driver</module>
 		<module>org.eclipse.kura.example.wire</module>
+		<module>org.eclipse.kura.example.factory</module>
 	</modules>
 
 </project>
