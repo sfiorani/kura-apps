@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,7 +33,7 @@ public class ClientHandler {
 
     private ServerSocket serverSocket;
 
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public ClientHandler(FactoryComponentExampleOptions options) {
         this.tcpPort = options.getTcpPort();
@@ -59,7 +58,7 @@ public class ClientHandler {
                 .collect(Collectors.toMap(i -> messages.get(i * 2), i -> messages.get(i * 2 + 1)));
     }
 
-    private void buildAndRunSocket() {
+    public void buildAndRunSocket() {
 
         logger.info("Server starting on port {}", this.tcpPort);
 
@@ -69,39 +68,42 @@ public class ClientHandler {
             }
 
             this.serverSocket = new ServerSocket(this.tcpPort);
-            while (!Thread.currentThread().isInterrupted()) {
-                handleClient(serverSocket);
-            }
+            this.serverSocket.setSoTimeout(500);
+
+            this.executor.submit(() -> handleClient(serverSocket));
+
         } catch (Exception ex) {
             logger.error("Server stopped due to: {}", ex.getMessage());
         }
     }
 
     private void handleClient(ServerSocket serverSocket) {
-        try (Socket clientSocket = serverSocket.accept()) {
-            clientSocket.setSoTimeout(5000);
-            logger.info("Client connected: {}", clientSocket.getInetAddress());
+        while (!this.executor.isShutdown()) {
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+            try (Socket clientSocket = serverSocket.accept()) {
+                logger.info("Client connected: {}", clientSocket.getInetAddress());
 
-            if (this.requestAndAnswers.isEmpty()) {
-                out.write(errorMessage);
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+
+                if (this.requestAndAnswers.isEmpty()) {
+                    out.write(errorMessage);
+                    out.flush();
+                    return;
+                }
+
+                String input = in.readLine();
+                logger.info("Received: {}", input);
+
+                if (checkRequest(input)) {
+                    out.write(this.requestAndAnswers.get(input) + "\n");
+                } else {
+                    out.write(generateAvailableRequestMessage() + "\n");
+                }
                 out.flush();
-                return;
+            } catch (IOException e) {
+                logger.debug("Timeout reached");
             }
-
-            String input = in.readLine();
-            logger.info("Received: {}", input);
-
-            if (checkRequest(input)) {
-                out.write(this.requestAndAnswers.get(input) + "\n");
-            } else {
-                out.write(generateAvailableRequestMessage() + "\n");
-            }
-            out.flush();
-        } catch (IOException e) {
-            logger.debug("Timeout reached");
         }
     }
 
@@ -127,24 +129,12 @@ public class ClientHandler {
 
     }
 
-    public void startSocket() {
-        this.executor.submit(this::buildAndRunSocket);
-    }
-
     public void stopSocket() throws IOException {
+
+        this.serverSocket.close();
+        this.serverSocket = null;
+
         this.executor.shutdown();
-
-        try {
-            this.executor.awaitTermination(30, TimeUnit.SECONDS);
-
-        } catch (InterruptedException ex) {
-            logger.warn("Failed to shutdown server: ", ex);
-            Thread.currentThread().interrupt();
-        }
-
-        if (!Objects.isNull(this.serverSocket) && !this.serverSocket.isClosed()) {
-            this.serverSocket.close();
-        }
     }
 
 }

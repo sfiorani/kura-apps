@@ -12,9 +12,8 @@
  *******************************************************************************/
 package org.eclipse.kura.example.factory;
 
+import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.eclipse.kura.configuration.ConfigurableComponent;
 import org.osgi.service.component.annotations.Activate;
@@ -40,8 +39,6 @@ public class FactoryComponentExample implements ConfigurableComponent {
 
     private ClientHandler clientHandler;
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
     /*
      * In the in activate, modified, deactivate methods it is possible to provide
      * the ComponentContext and the ExampleComponentOCD as parameters.
@@ -56,7 +53,7 @@ public class FactoryComponentExample implements ConfigurableComponent {
      * ExampleComponentOCD configuration)
      */
     @Activate
-    public void activate(final FactoryComponentExampleOCD properties) {
+    public void activate(final FactoryComponentExampleOCD properties) throws IOException {
         logger.info("Activating");
 
         updated(properties);
@@ -65,30 +62,28 @@ public class FactoryComponentExample implements ConfigurableComponent {
     }
 
     @Modified
-    public void updated(final FactoryComponentExampleOCD properties) {
+    public void updated(final FactoryComponentExampleOCD properties) throws IOException {
         logger.info("Updating");
 
         logger.debug("Updating with properties: {}", properties);
 
-        FactoryComponentExampleOptions newOpts = new FactoryComponentExampleOptions(properties);
+        FactoryComponentExampleOptions newOptions = new FactoryComponentExampleOptions(properties);
 
-        if (Objects.isNull(this.clientHandler) || !this.options.equals(newOpts)) {
+        if (!Objects.equals(this.options, newOptions)) {
 
-            this.executor.submit(() -> {
-                try {
-                    this.options = newOpts;
+            if (this.clientHandler != null) {
+                this.clientHandler.stopSocket();
+            }
 
-                    if (!Objects.isNull(this.clientHandler)) {
-                        this.clientHandler.stopSocket();
-                    }
+            try {
+                this.options = newOptions;
 
-                    this.clientHandler = new ClientHandler(newOpts);
-                    this.clientHandler.startSocket();
-                } catch (Exception ex) {
-                    logger.error(ex.getMessage());
-                }
+                this.clientHandler = new ClientHandler(newOptions);
+                this.clientHandler.buildAndRunSocket();
 
-            });
+            } catch (Exception ex) {
+                logger.error(ex.getMessage());
+            }
 
         }
 
