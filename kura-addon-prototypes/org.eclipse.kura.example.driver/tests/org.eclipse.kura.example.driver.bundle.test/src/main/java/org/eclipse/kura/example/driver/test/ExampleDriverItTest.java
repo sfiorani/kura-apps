@@ -41,9 +41,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(immediate = true)
-public class ExampleComponentItTest {
+public class ExampleDriverItTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExampleComponentItTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExampleDriverItTest.class);
 
     private static final String FACTORY_PID = "org.eclipse.kura.example.driver.ExampleDriver";
 
